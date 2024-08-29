@@ -1,0 +1,4 @@
+# server webhook libraries
+fastapi[standard]
+pyjwt
+passlib[bcrypt]

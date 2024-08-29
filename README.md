@@ -2,6 +2,10 @@
 
 # Ejemplo de Servidor Webhook para recibir notificaciones de ordenes finalizadas de SCAIZEN
 
+Se comparte un ejemplo simple de un servidor webhookque es capaz de recibir notificaciones de ordenes finalizadas de SCAIZEN.
+
+El servidor webhook está desarrollado en Python y usa el framework FastAPI.
+
 ## instalar dependencias
 
 ```bash
@@ -23,9 +27,9 @@ python3 server_webhook.py
 -   Username: johndoe
 -   Password: secret
 
-# Requerimientos
+# Requerimientos para el diseño del servidor webhook
 
-El servidor webhook debe ser capaz de recibir notificaciones de ordenes finalizadas de SCAIZEN.
+El servidor webhook debe ser diseñado siguiendo los siguientes requerimientos para ser capaz de recibir notificaciones de ordenes finalizadas de SCAIZEN.
 
 ## 1. Autenticación
 

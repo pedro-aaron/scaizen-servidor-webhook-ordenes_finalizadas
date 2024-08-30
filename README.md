@@ -182,3 +182,38 @@ Resumen de los requerimientos para el diseño del servidor webhook:
 9. El body de la petición de la notificación de orden finalizada debe ser un objeto JSON con los campos mencionaos en el punto 2.2: `timestamp`, `id_orden`, `tipo`, `producto`, `volumen_natural`, `volumen_neto`, `densidad`, `temperatura`, `fecha_inicio`, `fecha_fin`
 10. Los headers de la petición de la notificación de orden finalizada deben ser como los mencionados en el punto 2.2: `Authorization`, `Content-Type`, `accept`
 11. La respuesta de la petición de la notificación de orden finalizada debe ser un código de respuesta `200` si la notificación fue recibida exitosamente, de lo contrario, debe responder con un código HTTP `400` u otro correspondiente al error.
+
+Por tanto, el servidor webhook debe ser capaz de soportar las siguientes llamados vía CURL:
+
+### 1. Autenticación
+
+```bash
+curl -X 'POST' \
+  'http://127.0.0.1:8787/token' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/x-www-form-urlencoded' \
+  -d 'username=johndoe&password=secret'
+```
+
+### 2. Notificación de orden finalizada
+
+```bash
+curl -X 'POST' \
+  'http://127.0.0.1:8787/webhook_scaizen_finalizacion_orden' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJqb2huZG9lIiwiZXhwIjoxNzI0OTY2NTE3fQ.pH8ExYMUijmiXxVhOIxgbRpAipk7xqJHP1gQP2FwWS0' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "timestamp": "2024-08-29 20:34:57",
+  "id_orden": 124,
+  "tipo": "carga",
+  "producto": "diesel",
+  "volumen_natural": 123.45,
+  "volumen_neto": 123.456,
+  "densidad": 1.254,
+  "temperatura": 28.125,
+  "fecha_inicio": "2024-08-29 20:34:57",
+  "fecha_fin": "2024-08-29 20:34:57"
+}'
+
+```

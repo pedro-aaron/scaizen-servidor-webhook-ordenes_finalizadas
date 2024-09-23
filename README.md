@@ -94,6 +94,7 @@ SCAIZEN enviará al webhook (mediante POST) la siguiente información de la orde
 ```json
 {
     "timestamp": "2024-08-29 20:34:57",
+    "serie": 1,
     "id_orden": 124,
     "tipo": "carga",
     "producto": "diesel",
@@ -109,6 +110,7 @@ SCAIZEN enviará al webhook (mediante POST) la siguiente información de la orde
 donde:
 
 -   `timestamp` es la fecha y hora en la que se envió la notificación. Formato: YYYY-MM-DD HH:MM:SS
+-   `serie` es el número de serie de la orden.
 -   `id_orden` es el identificador único de la orden.
 -   `tipo` es el tipo de orden. Posibles valores: carga, descarga, reingreso.
 -   producto es el producto involucrado en la orden. Posibles valores: diesel, magna, premium.
@@ -129,6 +131,7 @@ curl -X 'POST' \
   -H 'Content-Type: application/json' \
   -d '{
   "timestamp": "2024-08-29 20:34:57",
+  "serie": 1,
   "id_orden": 124,
   "tipo": "carga",
   "producto": "diesel",
@@ -179,7 +182,7 @@ Resumen de los requerimientos para el diseño del servidor webhook:
 6. Los headers de la petición de autenticación deben ser `Content-Type: application/x-www-form-urlencoded` y `accept: application/json`
 7. el body de la petición de autenticación debe ser `username=<USERNAME>&password=<PASSWORD>`
 8. La url para enviar la notificación de orden finalizada debe ser `<HOST_SERVIDOR>/<ENDPOINT>`
-9. El body de la petición de la notificación de orden finalizada debe ser un objeto JSON con los campos mencionaos en el punto 2.2: `timestamp`, `id_orden`, `tipo`, `producto`, `volumen_natural`, `volumen_neto`, `densidad`, `temperatura`, `fecha_inicio`, `fecha_fin`
+9. El body de la petición de la notificación de orden finalizada debe ser un objeto JSON con los campos mencionaos en el punto 2.2: `timestamp`, `serie`, `id_orden`, `tipo`, `producto`, `volumen_natural`, `volumen_neto`, `densidad`, `temperatura`, `fecha_inicio`, `fecha_fin`
 10. Los headers de la petición de la notificación de orden finalizada deben ser como los mencionados en el punto 2.2: `Authorization`, `Content-Type`, `accept`
 11. La respuesta de la petición de la notificación de orden finalizada debe ser un código de respuesta `200` si la notificación fue recibida exitosamente, de lo contrario, debe responder con un código HTTP `400` u otro correspondiente al error.
 
@@ -205,6 +208,7 @@ curl -X 'POST' \
   -H 'Content-Type: application/json' \
   -d '{
   "timestamp": "2024-08-29 20:34:57",
+  "series": 1,
   "id_orden": 124,
   "tipo": "carga",
   "producto": "diesel",

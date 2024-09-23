@@ -162,6 +162,11 @@ class OrdenFinalizada(BaseModel):
         title="Fecha y hora del mensaje. Formato: YYYY-MM-DD HH:MM:SS",
         description="Fecha y hora del mensaje. Formato: YYYY-MM-DD HH:MM:SS",
     )
+    serie: int = Field(
+        ...,
+        title="Número de serie de la orden de SCAIZEN",
+        description="Número de serie de la orden de SCAIZEN",
+    )
     id_orden: int = Field(
         ...,
         title="ID de la orden SCAIZEN",

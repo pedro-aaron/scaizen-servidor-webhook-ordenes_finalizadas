@@ -27,7 +27,7 @@ python3 server_webhook.py
 -   Username: johndoe
 -   Password: secret
 
-# Requerimientos para el diseño del servidor webhook
+# Requerimientos para el diseño del servidor webhook con Auth JWT
 
 El servidor webhook debe ser diseñado siguiendo los siguientes requerimientos para ser capaz de recibir notificaciones de ordenes finalizadas de SCAIZEN.
 
@@ -83,7 +83,7 @@ La URL para recibir la notificación de orden finalizada tiene un formato simila
 
 ### 2.1 Endpoint para recibir la notificación de orden finalizada
 
-Suponiendo que el HOST_SERVIDOR es `http://localhost:8787` y ENDPOINT es `webhook_scaizen_finalizacion_orden`, la URL sería `http://localhost:8787/webhook_scaizen_finalizacion_orden`.
+Suponiendo que el HOST_SERVIDOR es `http://localhost:8787` y ENDPOINT es `webhook_scaizen_finalizacion_orden_jwt`, la URL sería `http://localhost:8787/webhook_scaizen_finalizacion_orden_jwt`.
 
 ### 2.2 Recepción del evento de orden finalizada
 
@@ -98,10 +98,10 @@ SCAIZEN enviará al webhook (mediante POST) la siguiente información de la orde
     "id_orden": 124,
     "tipo": "carga",
     "producto": "diesel",
-    "volumen_natural": 123.45,
-    "volumen_neto": 123.456,
-    "densidad": 1.254,
-    "temperatura": 28.125,
+    "volumen_natural": "123.45",
+    "volumen_neto": "123.666",
+    "densidad": "1.254",
+    "temperatura": "28.125",
     "fecha_inicio": "2024-08-29 20:34:57",
     "fecha_fin": "2024-08-29 20:34:57"
 }
@@ -125,7 +125,7 @@ A continuación se muestra un ejemplo de la petición que ejecutará SCAIZEN al 
 
 ```bash
 curl -X 'POST' \
-  'http://127.0.0.1:8787/webhook_scaizen_finalizacion_orden' \
+  'http://127.0.0.1:8787/webhook_scaizen_finalizacion_orden_jwt' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJqb2huZG9lIiwiZXhwIjoxNzI0OTY2NTE3fQ.pH8ExYMUijmiXxVhOIxgbRpAipk7xqJHP1gQP2FwWS0' \
   -H 'Content-Type: application/json' \
@@ -135,10 +135,10 @@ curl -X 'POST' \
   "id_orden": 124,
   "tipo": "carga",
   "producto": "diesel",
-  "volumen_natural": 123.45,
-  "volumen_neto": 123.456,
-  "densidad": 1.254,
-  "temperatura": 28.125,
+  "volumen_natural": "123.45",
+  "volumen_neto": "123.666",
+  "densidad": "1.254",
+  "temperatura": "28.125",
   "fecha_inicio": "2024-08-29 20:34:57",
   "fecha_fin": "2024-08-29 20:34:57"
 }'
@@ -202,7 +202,7 @@ curl -X 'POST' \
 
 ```bash
 curl -X 'POST' \
-  'http://127.0.0.1:8787/webhook_scaizen_finalizacion_orden' \
+  'http://127.0.0.1:8787/webhook_scaizen_finalizacion_orden_jwt' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJqb2huZG9lIiwiZXhwIjoxNzI0OTY2NTE3fQ.pH8ExYMUijmiXxVhOIxgbRpAipk7xqJHP1gQP2FwWS0' \
   -H 'Content-Type: application/json' \
@@ -212,12 +212,53 @@ curl -X 'POST' \
   "id_orden": 124,
   "tipo": "carga",
   "producto": "diesel",
-  "volumen_natural": 123.45,
-  "volumen_neto": 123.456,
-  "densidad": 1.254,
-  "temperatura": 28.125,
+  "volumen_natural": "123.45",
+  "volumen_neto": "123.666",
+  "densidad": "1.254",
+  "temperatura": "28.125",
   "fecha_inicio": "2024-08-29 20:34:57",
   "fecha_fin": "2024-08-29 20:34:57"
 }'
 
 ```
+
+# Requerimientos para el diseño del servidor webhook con Auth Basic
+
+Para Generar el header de autorización se debe codificar en base64 el usuario y contraseña separados por dos puntos `:`.
+Por ejemplo, si el usuario es `johndoe` y la contraseña es `secret`, el header de autorización sería `Basic am9obmRvZTpzZWNyZXQ=`
+
+Una Url en donde de puede generar el header de autorización es [https://www.debugbear.com/basic-auth-header-generator](https://www.debugbear.com/basic-auth-header-generator)
+
+En bash se puede generar el header de autorización de la siguiente manera:
+
+```bash
+echo -n 'johndoe:secret' | base64
+```
+
+El servidor webhook debe ser capaz de soportar las siguientes llamados vía CURL:
+
+```bash
+curl -X 'POST' \
+  'http://127.0.0.1:8787/webhook_scaizen_finalizacion_orden_basic' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -H 'Authorization: Basic am9obmRvZTpzZWNyZXQ=' \
+  -d '{
+  "timestamp": "2024-10-02T16:35:37.261Z",
+  "serie": 0,
+  "id_orden": 0,
+  "tipo": "string",
+  "producto": "string",
+  "volumen_natural": "string",
+  "volumen_neto": "string",
+  "densidad": "string",
+  "temperatura": "string",
+  "fecha_inicio": "2024-10-02T16:35:37.261Z",
+  "fecha_fin": "2024-10-02T16:35:37.261Z"
+}'
+```
+
+De aquí, el header de autorización es `Authorization : Basic am9obmRvZTpzZWNyZXQ=` y el endpoint es
+`http://127.0.0.1:8787/webhook_scaizen_finalizacion_orden_basic`
+
+Las respuestas esperadas son las mismas que en el caso de Auth JWT.

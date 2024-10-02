@@ -5,10 +5,17 @@ from typing import Annotated
 
 import jwt
 from fastapi import Depends, FastAPI, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import (
+    OAuth2PasswordBearer,
+    OAuth2PasswordRequestForm,
+    HTTPBasic,
+    HTTPBasicCredentials,
+)
 from jwt.exceptions import InvalidTokenError
 from passlib.context import CryptContext
 from pydantic import BaseModel, Field
+
+import secrets
 
 import uvicorn
 
@@ -55,6 +62,8 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 app = FastAPI()
+
+security = HTTPBasic()
 
 
 def verify_password(plain_password, hashed_password):
@@ -111,6 +120,30 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
     return user
 
 
+async def get_current_username(
+    credentials: Annotated[HTTPBasicCredentials, Depends(security)],
+):
+
+    current_username_bytes = credentials.username.encode("utf8")
+    correct_username_bytes = b"johndoe"
+    is_correct_username = secrets.compare_digest(
+        current_username_bytes, correct_username_bytes
+    )
+    current_password_bytes = credentials.password.encode("utf8")
+    correct_password_bytes = b"secret"
+    is_correct_password = secrets.compare_digest(
+        current_password_bytes, correct_password_bytes
+    )
+
+    if not (is_correct_username and is_correct_password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Basic"},
+        )
+    return credentials.username
+
+
 async def get_current_active_user(
     current_user: Annotated[User, Depends(get_current_user)],
 ):
@@ -123,7 +156,9 @@ async def get_current_active_user(
 async def login_for_access_token(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
 ) -> Token:
+    print(f"Authenticating user: {form_data.username}...")
     user = authenticate_user(fake_users_db, form_data.username, form_data.password)
+    print(f"User detected: {user}")
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -183,22 +218,22 @@ class OrdenFinalizada(BaseModel):
         title="Producto",
         description="Producto, puede ser: 'magna', 'diesel' o 'premium'",
     )
-    volumen_natural: float = Field(
+    volumen_natural: str = Field(
         ...,
         title="Volumen natural",
         description="Volumen natural del producto",
     )
-    volumen_neto: float = Field(
+    volumen_neto: str = Field(
         ...,
         title="Volumen neto",
         description="Volumen neto del producto",
     )
-    densidad: float = Field(
+    densidad: str = Field(
         ...,
         title="Densidad",
         description="Densidad del producto",
     )
-    temperatura: float = Field(
+    temperatura: str = Field(
         ...,
         title="Temperatura",
         description="Temperatura del producto",
@@ -223,11 +258,51 @@ class OrdenFinalizada(BaseModel):
 # - Si es par, devuelve un mensaje de éxito
 # - Si es impar, devuelve un mensaje de error
 # -------------------------------------------------------------------------------
-@app.post("/webhook_scaizen_finalizacion_orden")
-async def scaizen_finalizacion_orden_webhook(
+@app.post("/webhook_scaizen_finalizacion_orden_jwt")
+async def scaizen_finalizacion_orden_webhook_jwt(
     data: OrdenFinalizada,
     current_user: Annotated[User, Depends(get_current_active_user)],
 ):
+    print(f"---------------------------------------------------------")
+    print(f"---------------------------------------------------------")
+    print(f"Mensaje recibido:")
+    print(f"---------------------------------------------------------")
+    print(f"{data}")
+    print(f"---------------------------------------------------------")
+    print(f"---------------------------------------------------------")
+
+    # Verifica si el id_orden es par o impar
+    if data.id_orden % 2 == 0:
+        retorn = {"status": "success", "message": "Orden procesada con éxito."}
+        print(f"-----RESPUESTA OK-----")
+        print(f"Orden {data.id_orden} procesada con éxito.")
+        print(f"---------------------------------------------------------")
+        return retorn
+    else:
+        print(f"-----RESPUESTA ERROR-----")
+        print(f"Orden {data.id_orden} no se puede procesar.")
+        print(f"---------------------------------------------------------")
+        raise HTTPException(
+            status_code=400, detail="ID de orden impar. No se puede procesar."
+        )
+
+
+# -------------------------------------------------------------------------------
+# Endpoint para recibir el mensaje de SCAIZEN
+# Funcionamiento:
+# - Recibe un mensaje en formato JSON
+# - Verifica si el id_orden es par o impar
+# - Si es par, devuelve un mensaje de éxito
+# - Si es impar, devuelve un mensaje de error
+# -------------------------------------------------------------------------------
+
+
+@app.post("/webhook_scaizen_finalizacion_orden_basic")
+async def scaizen_finalizacion_orden_webhook_basic(
+    data: OrdenFinalizada, username: Annotated[str, Depends(get_current_username)]
+):
+    print(f"username: {username}")
+
     print(f"---------------------------------------------------------")
     print(f"---------------------------------------------------------")
     print(f"Mensaje recibido:")

@@ -327,6 +327,32 @@ async def scaizen_finalizacion_orden_webhook_basic(
         )
 
 
+@app.post("/webhook_scaizen_finalizacion_orden_none")
+async def scaizen_finalizacion_orden_webhook_none(data: OrdenFinalizada):
+    print(f"---------------------------------------------------------")
+    print(f"---------------------------------------------------------")
+    print(f"Mensaje recibido:")
+    print(f"---------------------------------------------------------")
+    print(f"{data}")
+    print(f"---------------------------------------------------------")
+    print(f"---------------------------------------------------------")
+
+    # Verifica si el id_orden es par o impar
+    if data.id_orden % 2 == 0:
+        retorn = {"status": "success", "message": "Orden procesada con éxito."}
+        print(f"-----RESPUESTA OK-----")
+        print(f"Orden {data.id_orden} procesada con éxito.")
+        print(f"---------------------------------------------------------")
+        return retorn
+    else:
+        print(f"-----RESPUESTA ERROR-----")
+        print(f"Orden {data.id_orden} no se puede procesar.")
+        print(f"---------------------------------------------------------")
+        raise HTTPException(
+            status_code=400, detail="ID de orden impar. No se puede procesar."
+        )
+
+
 # home implementation
 @app.get("/")
 async def home():

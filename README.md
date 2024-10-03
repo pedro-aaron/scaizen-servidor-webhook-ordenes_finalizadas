@@ -262,3 +262,32 @@ De aquí, el header de autorización es `Authorization : Basic am9obmRvZTpzZWNyZ
 `http://127.0.0.1:8787/webhook_scaizen_finalizacion_orden_basic`
 
 Las respuestas esperadas son las mismas que en el caso de Auth JWT.
+
+# Requerimientos para el diseño del servidor webhook sin Autenticación
+
+El servidor webhook debe ser capaz de soportar el siguiente llamado vía CURL:
+
+```bash
+curl -X 'POST' \
+  'http://127.0.0.1:8787/webhook_scaizen_finalizacion_orden_none' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "timestamp": "2024-10-02T16:35:37.261Z",
+  "serie": 0,
+  "id_orden": 0,
+  "tipo": "string",
+  "producto": "string",
+  "volumen_natural": "string",
+  "volumen_neto": "string",
+  "densidad": "string",
+  "temperatura": "string",
+  "fecha_inicio": "2024-10-02T16:35:37.261Z",
+  "fecha_fin": "2024-10-02T16:35:37.261Z"
+}'
+```
+
+Como se puede observar el endpoint es
+`http://127.0.0.1:8787/webhook_scaizen_finalizacion_orden_none` y no tiene header de autorización.
+
+Las respuestas esperadas son las mismas que en el caso de Auth JWT.
